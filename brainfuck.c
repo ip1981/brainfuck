@@ -204,7 +204,8 @@ void usage(char * self)
 
     printf("Usage: %s [options] [file]\n\n", self);
 
-    printf("Size of each data cell is %u byte(s)\n\n", sizeof(DATATYPE));
+    printf("Size of each data cell is %u byte(s)\n", sizeof(DATATYPE));
+    printf("All data cell are zeros initially\n\n");
     printf("Options (defaults are in brackets):\n");
     printf("   -s num         stack size (%u)\n", stack_size);
     printf("   -d num         data size (%u)\n", data_size);
