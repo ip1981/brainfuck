@@ -24,17 +24,30 @@ char format = 'u';
 unsigned int cp = 0;
 unsigned int dp = 0;
 unsigned int sp = 0;
+char ignore [] = "\t\r\n ";
+
 
 void read_code()
 {
-    int allocated, n, c;
+    int allocated, n, c, comment;
 
     allocated = 1000;
     n = 0;
 
     code = (char*) malloc(allocated * sizeof(char));
+    comment = 0;
     while (EOF != (c = getc(prog)))
     {
+        if (c == ';') /* end of code */
+            break;
+        else if (c == '#')
+            comment = 1;
+        else if (c == '\n' || c == '\r')
+            comment = 0;
+
+        if (comment || (NULL != strchr(ignore, c)))
+            continue;
+
         if (n >= allocated)
         {
             allocated <<= 1;
@@ -103,10 +116,15 @@ void pop_cp()
 
 int skip()
 {
+    int ob = 0;
     while (code[cp] != '\0')
     {
-        if (code[++cp] == ']')
-            return 1;
+        switch (code[cp])
+        {
+            case '[': ++ob; break;
+            case ']': --ob; if (0 == ob) return 1;
+        }
+        ++cp;
     }
     return 0;
 }
@@ -129,7 +147,7 @@ void run_code()
     char cmd;
     while ('\0' != (cmd = code[cp]))
     {
-        /*fprintf(stderr, "%c", cmd);*/
+        /* fprintf(stderr, "%c", cmd); */
         switch (cmd)
         {
             case '[': if (data[dp])
@@ -187,7 +205,10 @@ void usage(char * self)
     printf("                  if omitted read stdin\n");
     printf("\n");
     printf("Standard operators: <>+-[].,\n");
-    printf("Extensions: ciuox - change format output (same as -c & others, see above)\n");
+    printf("Extensions:\n");
+    printf("            ciuox - change format output (same as -c & others, see above)\n");
+    printf("            ;     - end of code (usefull when reading stdin)\n");
+    printf("            #     - comment to the end of line (usefull when reading files)\n");
     printf("\n");
     printf("Example:\n");
     printf(" echo '+++[.-]' | %s\n", self);

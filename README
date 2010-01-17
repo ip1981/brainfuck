@@ -18,7 +18,10 @@ Output formats for operator '.':
                   if omitted read stdin
 
 Standard operators: <>+-[].,
-Extensions: ciuox - change format output (same as -c & others, see above)
+Extensions:
+            ciuox - change format output (same as -c & others, see above)
+            ;     - end of code (usefull when reading stdin)
+            #     - comment to the end of line (usefull when reading files)
 
 Example:
  echo '+++[.-]' | ./brainfuck
