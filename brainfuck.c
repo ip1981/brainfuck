@@ -230,6 +230,7 @@ void usage(char * self)
     printf("Example:\n");
     printf(" echo '+++[.-]' | %s # count down from 3 to 0\n", self);
     printf(" echo ',+++.;5' | %s # shows 8\n", self);
+    printf(" echo ',>,<[->+<]>.;4 5' | %s # shows 4+5=9\n", self);
 
     exit(EXIT_SUCCESS);
 }

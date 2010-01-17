@@ -30,3 +30,4 @@ Extensions:
 Example:
  echo '+++[.-]' | ./brainfuck # count down from 3 to 0
  echo ',+++.;5' | ./brainfuck # shows 8
+ echo ',>,<[->+<]>.;4 5' | ./brainfuck # shows 4+5=9
