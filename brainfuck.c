@@ -19,7 +19,7 @@ unsigned int  *  stack = NULL;
 unsigned int data_size  = 30000;
 unsigned int stack_size = 128;
 
-char format = 'u';
+char format = 'i';
 
 unsigned int cp = 0;
 unsigned int dp = 0;
@@ -142,6 +142,18 @@ void print()
     }
 }
 
+void input()
+{
+    switch (format)
+    {
+        case 'i': scanf("%i\n",   (signed int*)   &(data[dp])); break;
+        case 'u': scanf("%u\n",   (unsigned int*) &(data[dp])); break;
+        case 'c': scanf("%c",     (char*)         &(data[dp])); break;
+        case 'o': scanf("0%o\n",  (unsigned int*) &(data[dp])); break;
+        case 'x': scanf("0x%X\n", (unsigned int*) &(data[dp])); break;
+    }
+}
+
 void run_code()
 {
     char cmd;
@@ -165,6 +177,7 @@ void run_code()
             case '>': inc_dp();     ++cp; break;
             case '<': dec_dp();     ++cp; break;
             case '.': print();      ++cp; break;
+            case ',': input();      ++cp; break;
 
             case 'i':
             case 'u':
@@ -196,8 +209,11 @@ void usage(char * self)
     printf("   -s num         stack size (%u)\n", stack_size);
     printf("   -d num         data size (%u)\n", data_size);
     printf("\n");
-    printf("Output formats for operator '.':\n");
+    printf("Formats for operators '.' and ',' (output and input):\n");
     printf("   -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal\n");
+    printf("                       octal number must be prepended by '0' (zero),\n");
+    printf("                       and hexadecimal - by '0x'\n");
+    printf("Default i/o format: -%c\n", format);
     printf("\n");
     printf("   -h             this help message\n");
     printf("\n");
@@ -206,12 +222,13 @@ void usage(char * self)
     printf("\n");
     printf("Standard operators: <>+-[].,\n");
     printf("Extensions:\n");
-    printf("            ciuox - change format output (same as -c & others, see above)\n");
+    printf("            ciuox - change i/o format (same as -c & others above)\n");
     printf("            ;     - end of code (useful when reading stdin)\n");
     printf("            #     - comment to the end of line (useful when reading files)\n");
     printf("\n");
     printf("Example:\n");
-    printf(" echo '+++[.-]' | %s\n", self);
+    printf(" echo '+++[.-]' | %s # count down from 3 to 0\n", self);
+    printf(" echo ',+++.;5' | %s # shows 8\n", self);
 
     exit(EXIT_SUCCESS);
 }
