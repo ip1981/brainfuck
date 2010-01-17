@@ -1,0 +1,24 @@
+./brainfuck: Brainfuck programming language interpreter
+See http://en.wikipedia.org/wiki/Brainfuck for more details
+
+Usage: ./brainfuck [options] [file]
+
+Size of each data cell is 4 byte(s)
+
+Options (defaults are in brackets):
+   -s num         stack size (128)
+   -d num         data size (30000)
+
+Output formats for operator '.':
+   -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal
+
+   -h             this help message
+
+  file            file to execute,
+                  if omitted read stdin
+
+Standard operators: <>+-[].,
+Extensions: ciuox - change format output (same as -c & others, see above)
+
+Example:
+ echo '+++[.-]' | ./brainfuck
