@@ -9,8 +9,11 @@ Options (defaults are in brackets):
    -s num         stack size (128)
    -d num         data size (30000)
 
-Output formats for operator '.':
+Formats for operators '.' and ',' (output and input):
    -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal
+                       octal number must be prepended by '0' (zero),
+                       and hexadecimal - by '0x'
+Default i/o format: -i
 
    -h             this help message
 
@@ -19,9 +22,10 @@ Output formats for operator '.':
 
 Standard operators: <>+-[].,
 Extensions:
-            ciuox - change format output (same as -c & others, see above)
+            ciuox - change i/o format (same as -c & others above)
             ;     - end of code (useful when reading stdin)
             #     - comment to the end of line (useful when reading files)
 
 Example:
- echo '+++[.-]' | ./brainfuck
+ echo '+++[.-]' | ./brainfuck # count down from 3 to 0
+ echo ',+++.;5' | ./brainfuck # shows 8
