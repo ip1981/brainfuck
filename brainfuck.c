@@ -207,8 +207,8 @@ void usage(char * self)
     printf("Standard operators: <>+-[].,\n");
     printf("Extensions:\n");
     printf("            ciuox - change format output (same as -c & others, see above)\n");
-    printf("            ;     - end of code (usefull when reading stdin)\n");
-    printf("            #     - comment to the end of line (usefull when reading files)\n");
+    printf("            ;     - end of code (useful when reading stdin)\n");
+    printf("            #     - comment to the end of line (useful when reading files)\n");
     printf("\n");
     printf("Example:\n");
     printf(" echo '+++[.-]' | %s\n", self);
