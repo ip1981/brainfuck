@@ -205,7 +205,7 @@ void usage(char * self)
     printf("Usage: %s [options] [file]\n\n", self);
 
     printf("Size of each data cell is %u byte(s)\n", sizeof(DATATYPE));
-    printf("All data cell are zeros initially\n\n");
+    printf("All data cells are zeros initially\n\n");
     printf("Options (defaults are in brackets):\n");
     printf("   -s num         stack size (%u)\n", stack_size);
     printf("   -d num         data size (%u)\n", data_size);
@@ -228,7 +228,7 @@ void usage(char * self)
     printf("            #     - comment to the end of line (useful when reading files)\n");
     printf("\n");
     printf("Example:\n");
-    printf(" echo '+++[.-]' | %s # count down from 3 to 0\n", self);
+    printf(" echo '+++[.-]' | %s # count down from 3 to 1\n", self);
     printf(" echo ',+++.;5' | %s # shows 8\n", self);
     printf(" echo ',>,<[->+<]>.;4 5' | %s # shows 4+5=9\n", self);
 

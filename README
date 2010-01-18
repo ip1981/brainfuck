@@ -4,7 +4,7 @@ See http://en.wikipedia.org/wiki/Brainfuck for more details
 Usage: ./brainfuck [options] [file]
 
 Size of each data cell is 4 byte(s)
-All data cell are zeros initially
+All data cells are zeros initially
 
 Options (defaults are in brackets):
    -s num         stack size (128)
@@ -28,6 +28,6 @@ Extensions:
             #     - comment to the end of line (useful when reading files)
 
 Example:
- echo '+++[.-]' | ./brainfuck # count down from 3 to 0
+ echo '+++[.-]' | ./brainfuck # count down from 3 to 1
  echo ',+++.;5' | ./brainfuck # shows 8
  echo ',>,<[->+<]>.;4 5' | ./brainfuck # shows 4+5=9
