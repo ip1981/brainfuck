@@ -27,7 +27,7 @@ unsigned int cp = 0;
 unsigned int dp = 0;
 unsigned int max_dp = 0;
 unsigned int sp = 0;
-char ignore [] = "\t\r\n ";
+char commands [] = "+-<>,.[]cioux";
 
 
 void read_code()
@@ -48,7 +48,7 @@ void read_code()
         else if (c == '\n' || c == '\r')
             comment = 0;
 
-        if (comment || (NULL != strchr(ignore, c)))
+        if (comment || (NULL == strchr(commands, c)))
             continue;
 
         if (n >= allocated)
@@ -138,11 +138,11 @@ void input()
 {
     switch (fmt)
     {
-        case 'i': scanf("%i",   (signed int*)   &(data[dp])); break;
-        case 'u': scanf("%u",   (unsigned int*) &(data[dp])); break;
-        case 'c': scanf("%c",   (char*)         &(data[dp])); break;
-        case 'o': scanf("0%o",  (unsigned int*) &(data[dp])); break;
-        case 'x': scanf("0x%X", (unsigned int*) &(data[dp])); break;
+        case 'i': scanf(format, (signed int*)   &(data[dp])); break;
+        case 'u': scanf(format, (unsigned int*) &(data[dp])); break;
+        case 'c': scanf(format, (char*)         &(data[dp])); break;
+        case 'o': scanf(format, (unsigned int*) &(data[dp])); break;
+        case 'x': scanf(format, (unsigned int*) &(data[dp])); break;
     }
 }
 
@@ -204,6 +204,8 @@ void run_code()
             case '.': if (!trace)
                       {
                           printf(format, data[dp]);
+                          if (fmt != 'c')
+                              printf(" ");
                       }
                       ++cp;
                       break;
