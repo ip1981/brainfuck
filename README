@@ -1,5 +1,5 @@
 ./brainfuck: Brainfuck programming language interpreter
-See http://en.wikipedia.org/wiki/Brainfuck for more details
+See <http://en.wikipedia.org/wiki/Brainfuck> for more details
 
 Usage: ./brainfuck [options] [file]
 
@@ -9,12 +9,13 @@ All data cells are zeros initially
 Options (defaults are in brackets):
    -s num         stack size (128)
    -d num         data size (30000)
+   -t             trace execution for debug
 
 Formats for operators '.' and ',' (output and input):
    -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal
                        octal number must be prepended by '0' (zero),
                        and hexadecimal - by '0x'
-Default i/o format: -i
+Default i/o format -u
 
    -h             this help message
 
@@ -31,3 +32,4 @@ Example:
  echo '+++[.-]' | ./brainfuck # count down from 3 to 1
  echo ',+++.;5' | ./brainfuck # shows 8
  echo ',>,<[->+<]>.;4 5' | ./brainfuck # shows 4+5=9
+ echo 'c,u.;h' | ./brainfuck # shows 104 (ASCII code for 'h')

@@ -19,10 +19,13 @@ unsigned int  *  stack = NULL;
 unsigned int data_size  = 30000;
 unsigned int stack_size = 128;
 
-char format = 'i';
+char fmt = 'u';
+char format [9] = "%u";
+int  trace  = 0;
 
 unsigned int cp = 0;
 unsigned int dp = 0;
+unsigned int max_dp = 0;
 unsigned int sp = 0;
 char ignore [] = "\t\r\n ";
 
@@ -80,6 +83,7 @@ int inc_dp()
     if (dp < data_size)
     {
         ++dp;
+        if (dp > max_dp) max_dp = dp;
         return 1;
     }
     else
@@ -130,36 +134,57 @@ int skip()
 }
 
 
-void print()
+void input()
 {
-    switch (format)
+    switch (fmt)
     {
-        case 'i': printf("%i\n",   data[dp]); break;
-        case 'u': printf("%u\n",   data[dp]); break;
-        case 'c': printf("%c",     data[dp]); break;
-        case 'o': printf("0%o\n",  data[dp]); break;
-        case 'x': printf("0x%X\n", data[dp]); break;
+        case 'i': scanf("%i",   (signed int*)   &(data[dp])); break;
+        case 'u': scanf("%u",   (unsigned int*) &(data[dp])); break;
+        case 'c': scanf("%c",   (char*)         &(data[dp])); break;
+        case 'o': scanf("0%o",  (unsigned int*) &(data[dp])); break;
+        case 'x': scanf("0x%X", (unsigned int*) &(data[dp])); break;
     }
 }
 
-void input()
+void print_data()
 {
-    switch (format)
+    unsigned int i;
+    for (i = 0; i < dp; i++)
     {
-        case 'i': scanf("%i\n",   (signed int*)   &(data[dp])); break;
-        case 'u': scanf("%u\n",   (unsigned int*) &(data[dp])); break;
-        case 'c': scanf("%c",     (char*)         &(data[dp])); break;
-        case 'o': scanf("0%o\n",  (unsigned int*) &(data[dp])); break;
-        case 'x': scanf("0x%X\n", (unsigned int*) &(data[dp])); break;
+        fprintf(stderr, " ");
+        fprintf(stderr, format, data[i]);
+    }
+
+    fprintf(stderr, " [");
+    fprintf(stderr, format, data[dp]);
+    fprintf(stderr, "]");
+
+    for (i = dp+1; i <= max_dp; i++)
+    {
+        fprintf(stderr, " ");
+        fprintf(stderr, format, data[i]);
+    }
+    fprintf(stderr, "\n");
+}
+
+void switch_format()
+{
+    switch (fmt)
+    {
+        case 'i': sprintf(format, "%%%c",   fmt); break;
+        case 'u': sprintf(format, "%%%c",   fmt); break;
+        case 'c': sprintf(format, "%%%c",   fmt); break;
+        case 'o': sprintf(format, "0%%%c",  fmt); break;
+        case 'x': sprintf(format, "0x%%%c", fmt); break;
     }
 }
 
 void run_code()
 {
     char cmd;
+
     while ('\0' != (cmd = code[cp]))
     {
-        /* fprintf(stderr, "%c", cmd); */
         switch (cmd)
         {
             case '[': if (data[dp])
@@ -176,7 +201,12 @@ void run_code()
             case '-': --(data[dp]); ++cp; break;
             case '>': inc_dp();     ++cp; break;
             case '<': dec_dp();     ++cp; break;
-            case '.': print();      ++cp; break;
+            case '.': if (!trace)
+                      {
+                          printf(format, data[dp]);
+                      }
+                      ++cp;
+                      break;
             case ',': input();      ++cp; break;
 
             case 'i':
@@ -184,8 +214,16 @@ void run_code()
             case 'c':
             case 'o':
             case 'x':
-                      format = cmd; ++cp; break;
+                      fmt = cmd;
+                      switch_format();
+                      ++cp;
+                      break;
             default: ++cp;
+        }
+        if (trace)
+        {
+            fprintf(stderr, "%c:", cmd);
+            print_data();
         }
     }
 }
@@ -200,7 +238,7 @@ void free_all()
 void usage(char * self)
 {
     printf("%s: Brainfuck programming language interpreter\n", self);
-    printf("See http://en.wikipedia.org/wiki/Brainfuck for more details\n\n");
+    printf("See <http://en.wikipedia.org/wiki/Brainfuck> for more details\n\n");
 
     printf("Usage: %s [options] [file]\n\n", self);
 
@@ -209,12 +247,13 @@ void usage(char * self)
     printf("Options (defaults are in brackets):\n");
     printf("   -s num         stack size (%u)\n", stack_size);
     printf("   -d num         data size (%u)\n", data_size);
+    printf("   -t             trace execution for debug\n");
     printf("\n");
     printf("Formats for operators '.' and ',' (output and input):\n");
     printf("   -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal\n");
     printf("                       octal number must be prepended by '0' (zero),\n");
     printf("                       and hexadecimal - by '0x'\n");
-    printf("Default i/o format: -%c\n", format);
+    printf("Default i/o format -%c\n", fmt);
     printf("\n");
     printf("   -h             this help message\n");
     printf("\n");
@@ -231,6 +270,7 @@ void usage(char * self)
     printf(" echo '+++[.-]' | %s # count down from 3 to 1\n", self);
     printf(" echo ',+++.;5' | %s # shows 8\n", self);
     printf(" echo ',>,<[->+<]>.;4 5' | %s # shows 4+5=9\n", self);
+    printf(" echo 'c,u.;h' | %s # shows 104 (ASCII code for 'h')\n", self);
 
     exit(EXIT_SUCCESS);
 }
@@ -241,7 +281,7 @@ int main(int argc, char ** argv)
     char * self = argv[0];
     int opt;
 
-    while (-1 != (opt = getopt(argc, argv, "s:d:h?iucox")))
+    while (-1 != (opt = getopt(argc, argv, "ts:d:h?iucox")))
     {
        switch (opt)
        {
@@ -251,12 +291,16 @@ int main(int argc, char ** argv)
            case 'd':
                sscanf(optarg, "%u", &data_size);
                break;
+           case 't':
+               trace = 1;
+               break;
            case 'i':
            case 'u':
            case 'c':
            case 'o':
            case 'x':
-               format = opt;
+               fmt = opt;
+               switch_format();
                break;
            default: usage(self);
        }
