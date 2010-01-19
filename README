@@ -9,7 +9,7 @@ All data cells are zeros initially
 Options (defaults are in brackets):
    -s num         stack size (128)
    -d num         data size (30000)
-   -t             trace execution for debug
+   -t             trace execution for debugging
 
 Formats for operators '.' and ',' (output and input):
    -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal
@@ -28,8 +28,11 @@ Extensions:
             ;     - end of code (useful when reading stdin)
             #     - comment to the end of line (useful when reading files)
 
-Example:
+Examples:
  echo '+++[.-]' | ./brainfuck # count down from 3 to 1
  echo ',+++.;5' | ./brainfuck # shows 8
  echo ',>,<[->+<]>.;4 5' | ./brainfuck # shows 4+5=9
  echo 'c,u.;h' | ./brainfuck # shows 104 (ASCII code for 'h')
+ echo ', [-[->+<]>];4' | ./brainfuck -t # move data pointer by 4 
+ echo ',>,< [> [->+<] < -[->+<]> ]; 3 7' | ./brainfuck -t # move '7' by 3 
+

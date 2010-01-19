@@ -249,7 +249,7 @@ void usage(char * self)
     printf("Options (defaults are in brackets):\n");
     printf("   -s num         stack size (%u)\n", stack_size);
     printf("   -d num         data size (%u)\n", data_size);
-    printf("   -t             trace execution for debug\n");
+    printf("   -t             trace execution for debugging\n");
     printf("\n");
     printf("Formats for operators '.' and ',' (output and input):\n");
     printf("   -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal\n");
@@ -268,11 +268,13 @@ void usage(char * self)
     printf("            ;     - end of code (useful when reading stdin)\n");
     printf("            #     - comment to the end of line (useful when reading files)\n");
     printf("\n");
-    printf("Example:\n");
+    printf("Examples:\n");
     printf(" echo '+++[.-]' | %s # count down from 3 to 1\n", self);
     printf(" echo ',+++.;5' | %s # shows 8\n", self);
     printf(" echo ',>,<[->+<]>.;4 5' | %s # shows 4+5=9\n", self);
     printf(" echo 'c,u.;h' | %s # shows 104 (ASCII code for 'h')\n", self);
+    printf(" echo ', [-[->+<]>];4' | %s -t # move data pointer by 4 \n", self);
+    printf(" echo ',>,< [> [->+<] < -[->+<]> ]; 3 7' | %s -t # move '7' by 3 \n\n", self);
 
     exit(EXIT_SUCCESS);
 }
