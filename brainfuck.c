@@ -10,6 +10,7 @@
 #include <getopt.h>
 
 #define DATATYPE int
+#define DATATYPE_STR "int"
 
 FILE *prog;
 
@@ -19,7 +20,7 @@ DATATYPE *data = NULL;
 
 unsigned int *stack = NULL;
 
-unsigned int data_size = 30000;
+unsigned int data_size = 1024;
 
 unsigned int stack_size = 128;
 
@@ -28,6 +29,7 @@ char fmt = 'u';
 char format[9] = "%u";
 
 int trace = 0;
+int compile = 0;
 
 unsigned int cp = 0;
 
@@ -298,6 +300,78 @@ run_code()
 }
 
 void
+bf2c()
+{
+    char cmd;
+
+    printf("#include <stdlib.h>\n#include <stdio.h>\n\n");
+    printf("%s data[%u];\n", DATATYPE_STR, data_size);
+    printf("unsigned int dp = 0;\n\n");
+    printf("int main()\n{\n");
+
+    while ('\0' != (cmd = code[cp]))
+    {
+        switch (cmd)
+        {
+          case '[':
+              printf("while (data[dp])\n{\n");
+              ++cp;
+              break;
+          case ']':
+              printf("}\n");
+              ++cp;
+              break;
+          case '+':
+              printf("++(data[dp]);\n");
+              ++cp;
+              break;
+          case '-':
+              printf("--(data[dp]);\n");
+              ++cp;
+              break;
+          case '>':
+              printf("++dp;\n");
+              ++cp;
+              break;
+          case '<':
+              printf("--dp;\n");
+              ++cp;
+              break;
+          case ',':
+              switch (fmt)
+              {
+                  case 'i': printf("scanf(\"%s\", (signed int *)&(data[dp]));\n", format); break;
+                  case 'u': printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n", format); break;
+                  case 'c': printf("scanf(\"%s\", (char *)&(data[dp]));\n", format); break;
+                  case 'o': printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n", format); break;
+                  case 'x': printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n", format); break;
+              }
+              ++cp;
+              break;
+          case '.':
+              if (fmt == 'c')
+                  printf("printf(\"%s\", data[dp]);\n", format);
+              else
+                  printf("printf(\"%s \", data[dp]);\n", format);
+              ++cp;
+              break;
+          case 'i':
+          case 'u':
+          case 'c':
+          case 'o':
+          case 'x':
+              fmt = cmd;
+              switch_format();
+              ++cp;
+              break;
+          default:
+              ++cp;
+        }
+    }
+    printf("}\n");
+}
+
+void
 free_all()
 {
     if (code != NULL)
@@ -322,6 +396,7 @@ usage(char *self)
     printf("   -s num         stack size (%u)\n", stack_size);
     printf("   -d num         data size (%u)\n", data_size);
     printf("   -t             trace execution for debugging\n");
+    printf("   -C             translate into C (to stdout)\n");
     printf("\n");
     printf("Formats for operators '.' and ',' (output and input):\n");
     printf
@@ -366,7 +441,7 @@ main(int argc, char **argv)
 
     int opt;
 
-    while (-1 != (opt = getopt(argc, argv, "ts:d:h?iucox")))
+    while (-1 != (opt = getopt(argc, argv, "Cts:d:h?iucox")))
     {
         switch (opt)
         {
@@ -378,6 +453,9 @@ main(int argc, char **argv)
               break;
           case 't':
               trace = 1;
+              break;
+          case 'C':
+              compile = 1;
               break;
           case 'i':
           case 'u':
@@ -410,10 +488,15 @@ main(int argc, char **argv)
     if (prog != stdin)
         fclose(prog);
 
-    init_data();
-    init_stack();
 
-    run_code();
+    if (compile)
+        bf2c();
+    else
+    {
+        init_data();
+        init_stack();
+        run_code();
+    }
 
     free_all();
     return EXIT_SUCCESS;

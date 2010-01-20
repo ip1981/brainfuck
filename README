@@ -8,8 +8,9 @@ All data cells are zeros initially
 
 Options (defaults are in brackets):
    -s num         stack size (128)
-   -d num         data size (30000)
+   -d num         data size (1024)
    -t             trace execution for debugging
+   -C             translate into C (to stdout)
 
 Formats for operators '.' and ',' (output and input):
    -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal
