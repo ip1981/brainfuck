@@ -255,17 +255,23 @@ run_code()
           case ']':
               pop_cp();
               break;
+          case 'Z':
+              data[dp] = 0;
+              ++cp;
+              break;
           case 'I':    /* I23 -> add 22 to the current cell */
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               (data[dp]) += (DATATYPE) d;
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case 'D':    /* D23 -> subtract 22 from the current cell */
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               (data[dp]) -= (DATATYPE) d;
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case '+':
               ++(data[dp]);
@@ -279,13 +285,15 @@ run_code()
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               dp += d;
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case 'L':    /* L2 -> move left by 2 cells */
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               dp -= d;
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case '>':
               inc_dp();
@@ -320,7 +328,7 @@ run_code()
           default:
               ++cp;
         }
-        if (trace)
+        if (trace && cmd != ' ')
         {
             fprintf(stderr, "%c:", cmd);
             print_data();
@@ -331,7 +339,7 @@ run_code()
 void
 optimize_code()
 {
-    char *new_code;
+    char *new_code, *substr;
 
     unsigned int i, j, k;
 
@@ -407,11 +415,20 @@ optimize_code()
         }
     }
 
+    /* FIXME valid while we use finite integers */
+    substr = new_code;
+    while (NULL != (substr = strstr(substr, "[-]")))
+    {
+        strncpy(substr, "Z  ", 3); /* [-] set current cell to 0 */
+    }
+    substr = new_code;
+    while (NULL != (substr = strstr(substr, "[+]")))
+    {
+        strncpy(substr, "Z  ", 3); /* [-] set current cell to 0 */
+    }
+
     free(code);
     code = new_code;
-
-/*     printf("%s", code);
-   exit(EXIT_SUCCESS);*/
 }
 
 void
@@ -430,6 +447,10 @@ bf2c()
     {
         switch (cmd)
         {
+          case 'Z':
+              printf("data[dp] = 0;\n");
+              ++cp;
+              break;
           case '[':
               printf("while (data[dp])\n{\n");
               ++cp;
@@ -442,13 +463,15 @@ bf2c()
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               printf("data[dp] += %u;\n", d);
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case 'D':    /* D23 -> subtract 22 from the current cell */
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               printf("data[dp] -= %u;\n", d);
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case '+':
               printf("++(data[dp]);\n");
@@ -462,13 +485,15 @@ bf2c()
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               printf("dp += %u;\n", d);
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case 'L':    /* L2 -> move left by 2 cells */
               ++cp;
               sscanf(&(code[cp]), "%u", &d);
               printf("dp -= %u;\n", d);
-              ++cp;     /* minimum, other digit (if any) will be skipped */
+              while (code[cp] >= '0' && code[cp] <= '9')
+                  ++cp; /* skip digits */
               break;
           case '>':
               printf("++dp;\n");
