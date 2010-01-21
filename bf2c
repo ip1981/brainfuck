@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+set -u
+
+BRAINFUCK=./brainfuck
+
+if [ $# != 0 ]; then
+    INDENT=$(which indent 2>/dev/null)
+    BF="$1"
+    C=${BF/.bf/.c}
+    shift
+    "$BRAINFUCK" -O -C "$@" "$BF" > "$C"
+    if [ -x "$INDENT" ]; then
+        "$INDENT" "$C"
+    fi
+fi
+
+exit 0
+
