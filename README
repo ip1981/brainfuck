@@ -10,6 +10,7 @@ Options (defaults are in brackets):
    -s num         stack size (128)
    -d num         data size (1024)
    -t             trace execution for debugging
+   -O             optimize code
    -C             translate into C (to stdout)
 
 Formats for operators '.' and ',' (output and input):

@@ -29,7 +29,10 @@ char fmt = 'u';
 char format[9] = "%u";
 
 int trace = 0;
+
 int compile = 0;
+
+int optimize = 0;
 
 unsigned int cp = 0;
 
@@ -231,7 +234,9 @@ run_code()
 {
     char cmd;
 
-    while ('\0' != (cmd = code[cp]))
+    unsigned int d;
+
+    while (0 != (cmd = code[cp]))
     {
         switch (cmd)
         {
@@ -250,6 +255,18 @@ run_code()
           case ']':
               pop_cp();
               break;
+          case 'I':    /* I23 -> add 22 to the current cell */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              (data[dp]) += (DATATYPE) d;
+              ++cp;     /* minimum, other digit (if any) will be skipped */
+              break;
+          case 'D':    /* D23 -> subtract 22 from the current cell */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              (data[dp]) -= (DATATYPE) d;
+              ++cp;     /* minimum, other digit (if any) will be skipped */
+              break;
           case '+':
               ++(data[dp]);
               ++cp;
@@ -257,6 +274,18 @@ run_code()
           case '-':
               --(data[dp]);
               ++cp;
+              break;
+          case 'R':    /* R3 -> move right by 3 cells */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              dp += d;
+              ++cp;     /* minimum, other digit (if any) will be skipped */
+              break;
+          case 'L':    /* L2 -> move left by 2 cells */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              dp -= d;
+              ++cp;     /* minimum, other digit (if any) will be skipped */
               break;
           case '>':
               inc_dp();
@@ -300,9 +329,97 @@ run_code()
 }
 
 void
+optimize_code()
+{
+    char *new_code;
+
+    unsigned int i, j, k;
+
+    DATATYPE d;
+
+    char tmp[64], cmd;
+
+    new_code = calloc(strlen(code) + 1, sizeof(char));
+
+    i = j = 0;
+    while (0 != (cmd = code[i]))
+    {
+        switch (cmd)
+        {
+          case '+':
+          case '-':    /* compress ++--+---+... */
+              d = 0;
+              while (0 != (cmd = code[i]))
+              {
+                  if (cmd == '+')
+                      ++d;
+                  else if (cmd == '-')
+                      --d;
+                  else
+                      break;
+                  ++i;
+              }
+              if (d == 1)
+                  new_code[j++] = '+';
+              else if (d == -1)
+                  new_code[j++] = '-';
+              else if (d != 0)
+              {
+                  if (d < 0)
+                      sprintf(tmp, "D%u", -d);
+                  else
+                      sprintf(tmp, "I%u", d);
+                  k = 0;
+                  while (tmp[k])
+                      new_code[j++] = tmp[k++];
+              }
+              break;
+          case '>':
+          case '<':    /* compress >><<>>>>> */
+              d = 0;
+              while (0 != (cmd = code[i]))
+              {
+                  if (cmd == '>')
+                      ++d;
+                  else if (cmd == '<')
+                      --d;
+                  else
+                      break;
+                  ++i;
+              }
+              if (d == 1)
+                  new_code[j++] = '>';
+              else if (d == -1)
+                  new_code[j++] = '<';
+              else if (d != 0)
+              {
+                  if (d < 0)
+                      sprintf(tmp, "L%u", -d);  /* move left by d */
+                  else
+                      sprintf(tmp, "R%u", d);   /* move right by d */
+                  k = 0;
+                  while (tmp[k])
+                      new_code[j++] = tmp[k++];
+              }
+              break;
+          default:
+              new_code[j++] = code[i++];
+        }
+    }
+
+    free(code);
+    code = new_code;
+
+/*     printf("%s", code);
+   exit(EXIT_SUCCESS);*/
+}
+
+void
 bf2c()
 {
     char cmd;
+
+    unsigned int d;
 
     printf("#include <stdlib.h>\n#include <stdio.h>\n\n");
     printf("%s data[%u];\n", DATATYPE_STR, data_size);
@@ -321,6 +438,18 @@ bf2c()
               printf("}\n");
               ++cp;
               break;
+          case 'I':    /* I23 -> add 22 to the current cell */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              printf("data[dp] += %u;\n", d);
+              ++cp;     /* minimum, other digit (if any) will be skipped */
+              break;
+          case 'D':    /* D23 -> subtract 22 from the current cell */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              printf("data[dp] -= %u;\n", d);
+              ++cp;     /* minimum, other digit (if any) will be skipped */
+              break;
           case '+':
               printf("++(data[dp]);\n");
               ++cp;
@@ -328,6 +457,18 @@ bf2c()
           case '-':
               printf("--(data[dp]);\n");
               ++cp;
+              break;
+          case 'R':    /* R3 -> move right by 3 cells */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              printf("dp += %u;\n", d);
+              ++cp;     /* minimum, other digit (if any) will be skipped */
+              break;
+          case 'L':    /* L2 -> move left by 2 cells */
+              ++cp;
+              sscanf(&(code[cp]), "%u", &d);
+              printf("dp -= %u;\n", d);
+              ++cp;     /* minimum, other digit (if any) will be skipped */
               break;
           case '>':
               printf("++dp;\n");
@@ -340,11 +481,25 @@ bf2c()
           case ',':
               switch (fmt)
               {
-                  case 'i': printf("scanf(\"%s\", (signed int *)&(data[dp]));\n", format); break;
-                  case 'u': printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n", format); break;
-                  case 'c': printf("scanf(\"%s\", (char *)&(data[dp]));\n", format); break;
-                  case 'o': printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n", format); break;
-                  case 'x': printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n", format); break;
+                case 'i':
+                    printf("scanf(\"%s\", (signed int *)&(data[dp]));\n",
+                           format);
+                    break;
+                case 'u':
+                    printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n",
+                           format);
+                    break;
+                case 'c':
+                    printf("scanf(\"%s\", (char *)&(data[dp]));\n", format);
+                    break;
+                case 'o':
+                    printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n",
+                           format);
+                    break;
+                case 'x':
+                    printf("scanf(\"%s\", (unsigned int *)&(data[dp]));\n",
+                           format);
+                    break;
               }
               ++cp;
               break;
@@ -368,7 +523,7 @@ bf2c()
               ++cp;
         }
     }
-    printf("}\n");
+    printf("exit(EXIT_SUCCESS);\n}\n");
 }
 
 void
@@ -396,6 +551,7 @@ usage(char *self)
     printf("   -s num         stack size (%u)\n", stack_size);
     printf("   -d num         data size (%u)\n", data_size);
     printf("   -t             trace execution for debugging\n");
+    printf("   -O             optimize code\n");
     printf("   -C             translate into C (to stdout)\n");
     printf("\n");
     printf("Formats for operators '.' and ',' (output and input):\n");
@@ -441,7 +597,7 @@ main(int argc, char **argv)
 
     int opt;
 
-    while (-1 != (opt = getopt(argc, argv, "Cts:d:h?iucox")))
+    while (-1 != (opt = getopt(argc, argv, "OCts:d:h?iucox")))
     {
         switch (opt)
         {
@@ -456,6 +612,9 @@ main(int argc, char **argv)
               break;
           case 'C':
               compile = 1;
+              break;
+          case 'O':
+              optimize = 1;
               break;
           case 'i':
           case 'u':
@@ -488,9 +647,13 @@ main(int argc, char **argv)
     if (prog != stdin)
         fclose(prog);
 
+    if (optimize)
+        optimize_code();
 
     if (compile)
+    {
         bf2c();
+    }
     else
     {
         init_data();
