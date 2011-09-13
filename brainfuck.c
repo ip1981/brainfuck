@@ -78,7 +78,7 @@ read_code()
 
     if (n >= allocated)
     {
-        allocated <<= 1;
+        allocated *= 2;
         code = (char *)realloc(code, allocated * sizeof(char));
     }
     code[n++] = '\0';
@@ -740,9 +740,16 @@ main(int argc, char **argv)
     {
         bf2c();
     }
-    else if (strcmp(print_as, "cow") == 0)
+    else if (print_as != NULL)
     {
-        bf2moo();
+        if (strcmp(print_as, "cow") == 0)
+        {
+            bf2moo();
+        }
+        else
+        {
+            fprintf(stderr, "Unknown argument to -p: %s\n", print_as);
+        }
     }
     else
     {
