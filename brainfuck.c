@@ -14,6 +14,8 @@
 
 FILE *prog;
 
+char *print_as = NULL;
+
 char *code = NULL;
 
 DATATYPE *data = NULL;
@@ -415,16 +417,18 @@ optimize_code()
         }
     }
 
-    /* FIXME valid while we use finite integers */
+    /*
+     * FIXME valid while we use finite integers 
+     */
     substr = new_code;
     while (NULL != (substr = strstr(substr, "[-]")))
     {
-        strncpy(substr, "Z  ", 3); /* [-] set current cell to 0 */
+        strncpy(substr, "Z  ", 3);      /* [-] set current cell to 0 */
     }
     substr = new_code;
     while (NULL != (substr = strstr(substr, "[+]")))
     {
-        strncpy(substr, "Z  ", 3); /* [-] set current cell to 0 */
+        strncpy(substr, "Z  ", 3);      /* [-] set current cell to 0 */
     }
 
     free(code);
@@ -552,6 +556,56 @@ bf2c()
 }
 
 void
+bf2moo()
+{
+    char cmd;
+
+    while ('\0' != (cmd = code[cp]))
+    {
+        switch (cmd)
+        {
+          case '+':
+              printf("MoO");
+              break;
+          case '-':
+              printf("MOo");
+              break;
+          case '>':
+              printf("moO");
+              break;
+          case '<':
+              printf("mOo");
+              break;
+          case '[':
+              if (strncmp(code + cp, "[-]", 3) == 0)
+              {
+                  printf("OOO");
+                  cp += 2;
+              }
+              else
+              {
+                  printf("moo");
+              }
+              break;
+          case ']':
+              printf("MOO");
+              break;
+          case '.':
+              printf("OOM");
+              break;
+          case ',':
+              printf("oom");
+              break;
+          default:
+              fprintf(stderr, "unknown character %c at %u\n", cmd, cp);
+              break;
+        }
+        ++cp;
+    }
+    printf("\n");
+}
+
+void
 free_all()
 {
     if (code != NULL)
@@ -570,7 +624,8 @@ usage(char *self)
 
     printf("Usage: %s [options] [file]\n\n", self);
 
-    printf("Size of each data cell is %lu byte(s)\n", (long unsigned int)sizeof(DATATYPE));
+    printf("Size of each data cell is %lu byte(s)\n",
+           (long unsigned int)sizeof(DATATYPE));
     printf("All data cells are zeros initially\n\n");
     printf("Options (defaults are in brackets):\n");
     printf("   -s num         stack size (%u)\n", stack_size);
@@ -578,6 +633,7 @@ usage(char *self)
     printf("   -t             trace execution for debugging\n");
     printf("   -O             optimize code\n");
     printf("   -C             translate into C (to stdout)\n");
+    printf("   -p cow         translate into Cow (to stdout)\n");
     printf("\n");
     printf("Formats for operators '.' and ',' (output and input):\n");
     printf
@@ -622,10 +678,13 @@ main(int argc, char **argv)
 
     int opt;
 
-    while (-1 != (opt = getopt(argc, argv, "OCts:d:h?iucox")))
+    while (-1 != (opt = getopt(argc, argv, "p:OCts:d:h?iucox")))
     {
         switch (opt)
         {
+          case 'p':
+              print_as = optarg;
+              break;
           case 's':
               sscanf(optarg, "%u", &stack_size);
               break;
@@ -665,7 +724,9 @@ main(int argc, char **argv)
         }
     }
     else
+    {
         prog = stdin;
+    }
 
     read_code();
 
@@ -678,6 +739,10 @@ main(int argc, char **argv)
     if (compile)
     {
         bf2c();
+    }
+    else if (strcmp(print_as, "cow") == 0)
+    {
+        bf2moo();
     }
     else
     {

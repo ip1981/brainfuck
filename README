@@ -12,6 +12,7 @@ Options (defaults are in brackets):
    -t             trace execution for debugging
    -O             optimize code
    -C             translate into C (to stdout)
+   -p cow         translate into Cow (to stdout)
 
 Formats for operators '.' and ',' (output and input):
    -c, -i, -u, -o, -x  char, signed int, unsigned int, octal, hexadecimal
