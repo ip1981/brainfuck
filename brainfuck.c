@@ -418,17 +418,17 @@ optimize_code ()
     }
 
   /*
-   * FIXME valid while we use finite integers 
+   * FIXME valid while we use finite integers
    */
   substr = new_code;
   while (NULL != (substr = strstr (substr, "[-]")))
     {
-      strncpy (substr, "Z  ", 3); /* [-] set current cell to 0 */
+      memcpy (substr, "Z  ", 3); /* [-] set current cell to 0 */
     }
   substr = new_code;
   while (NULL != (substr = strstr (substr, "[+]")))
     {
-      strncpy (substr, "Z  ", 3); /* [-] set current cell to 0 */
+      memcpy (substr, "Z  ", 3); /* [-] set current cell to 0 */
     }
 
   free (code);
